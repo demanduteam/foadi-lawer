@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>سوالات متداول (FAQ) | محمدجواد فؤادی، وکیل پایه یک</title>
+    <meta name="description" content="پاسخ به متداول‌ترین سوالات حقوقی و سوالات مربوط به فرآیند وکالت، زمان‌بندی و هزینه‌های دفتر وکالت فؤادی.">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary-navy': '#132e54',
+                        'accent-gold': '#f59e0b',
+                    },
+                }
+            }
+        }
+        // Simple script for FAQ accordion functionality (Non-functional placeholder logic)
+        function toggleAnswer(elementId) {
+            const answer = document.getElementById(elementId);
+            const icon = document.querySelector(`#${elementId} + button svg`);
+            if (answer.classList.contains('hidden')) {
+                answer.classList.remove('hidden');
+                // Simulate icon change if it were functional
+            } else {
+                answer.classList.add('hidden');
+                // Simulate icon change if it were functional
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        body { font-family: 'Inter', sans-serif; color: #1f2937; background-color: #ffffff; }
+    </style>
+</head>
+<body class="antialiased">
+    <!-- Header (Consistent Navigation) -->
+    <header class="bg-primary-navy shadow-lg">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-3 flex justify-between items-center">
+            <a href="index.html" class="text-xl sm:text-2xl font-bold text-white tracking-wide">
+                دفتر وکالت <span class="text-accent-gold">فؤادی</span>
+            </a>
+            <nav class="hidden md:flex space-x-6 space-x-reverse text-white text-sm font-medium">
+                <a href="services.html" class="hover:text-accent-gold transition duration-200">خدمات حقوقی</a>
+                <a href="about.html" class="hover:text-accent-gold transition duration-200">درباره وکیل</a>
+                <a href="blog.html" class="hover:text-accent-gold transition duration-200">مقالات و بلاگ</a>
+                <a href="contact.html" class="px-3 py-1 bg-accent-gold text-primary-navy rounded-md hover:bg-yellow-600 transition duration-200">مشاوره فوری</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="py-16">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <h1 class="text-4xl font-extrabold text-primary-navy mb-4 text-center">
+                سوالات متداول (FAQ)
+            </h1>
+            <p class="text-center text-xl text-gray-700 max-w-3xl mx-auto mb-16">
+                پاسخ‌هایی برای پرسش‌های متداول شما درباره نحوه همکاری، هزینه‌ها و فرآیندهای حقوقی.
+            </p>
+
+            <div class="max-w-4xl mx-auto space-y-4">
+                
+                <!-- FAQ Item 1 -->
+                <div class="bg-white p-4 rounded-xl shadow-lg border-b border-accent-gold">
+                    <button onclick="console.log('Toggle Q1')" class="w-full text-right flex justify-between items-center py-2 focus:outline-none">
+                        <span class="text-lg font-bold text-primary-navy">۱. هزینه خدمات وکالت چگونه محاسبه می‌شود؟</span>
+                        <!-- Placeholder for plus/minus icon -->
+                        <svg class="w-6 h-6 text-accent-gold transform transition duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                    </button>
+                    <div id="answer-1" class="hidden pt-2 border-t mt-2 text-gray-700 leading-relaxed">
+                        هزینه‌ها بر اساس تعرفه‌های رسمی کانون وکلا و همچنین پیچیدگی و زمان‌بر بودن پرونده، به‌صورت توافقی تعیین می‌شود. در اولین جلسه مشاوره، پس از بررسی کامل پرونده، برآورد دقیقی از هزینه‌ها به شما ارائه خواهد شد.
+                    </div>
+                </div>
+
+                <!-- FAQ Item 2 -->
+                <div class="bg-white p-4 rounded-xl shadow-lg border-b border-accent-gold">
+                    <button onclick="console.log('Toggle Q2')" class="w-full text-right flex justify-between items-center py-2 focus:outline-none">
+                        <span class="text-lg font-bold text-primary-navy">۲. اولین قدم برای شروع همکاری چیست؟</span>
+                        <svg class="w-6 h-6 text-accent-gold transform transition duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                    </button>
+                    <div id="answer-2" class="hidden pt-2 border-t mt-2 text-gray-700 leading-relaxed">
+                        اولین قدم، تنظیم وقت مشاوره تخصصی است. در این جلسه، شما مدارک و شرح کامل پرونده را ارائه می‌دهید تا وکیل فؤادی بتواند بهترین استراتژی را برای شما مشخص کند. می‌توانید از طریق فرم تماس یا واتساپ اقدام کنید.
+                    </div>
+                </div>
+
+                <!-- FAQ Item 3 -->
+                <div class="bg-white p-4 rounded-xl shadow-lg border-b border-accent-gold">
+                    <button onclick="console.log('Toggle Q3')" class="w-full text-right flex justify-between items-center py-2 focus:outline-none">
+                        <span class="text-lg font-bold text-primary-navy">۳. آیا مشاوره تلفنی یا آنلاین ارائه می‌شود؟</span>
+                        <svg class="w-6 h-6 text-accent-gold transform transition duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                    </button>
+                    <div id="answer-3" class="hidden pt-2 border-t mt-2 text-gray-700 leading-relaxed">
+                        بله، علاوه بر مشاوره حضوری در دفتر، امکان ارائه مشاوره تلفنی و آنلاین از طریق پلتفرم‌های امن نیز فراهم است تا موکلین خارج از تهران نیز بتوانند از خدمات ما استفاده کنند.
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center mt-16 p-8 bg-primary-navy rounded-xl shadow-2xl">
+                <p class="text-2xl font-semibold text-white mb-4">پاسخ سوال خود را پیدا نکردید؟</p>
+                <a href="contact.html" class="inline-block px-8 py-3 bg-accent-gold text-primary-navy font-bold rounded-lg shadow-xl hover:bg-yellow-600 transition duration-300">
+                    سوال خود را مستقیم از ما بپرسید →
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer (Consistent Footer) -->
+    <footer class="bg-gray-800 text-white py-8 mt-12">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center">
+            <p class="text-sm mb-4 md:mb-0">
+                &copy; ۱۴۰۴ | کلیه حقوق این وبسایت متعلق به محمدجواد فؤادی است.
+            </p>
+            <div class="flex space-x-4 space-x-reverse">
+                <a href="#" class="text-gray-400 hover:text-accent-gold transition duration-200" aria-label="لینک به اینستاگرام">اینستاگرام</a>
+                <a href="#" class="text-gray-400 hover:text-accent-gold transition duration-200" aria-label="لینک به لینکدین">لینکدین</a>
+                <a href="faq.html" class="text-gray-400 hover:text-accent-gold transition duration-200" aria-label="لینک به سوالات متداول">سوالات متداول</a>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
