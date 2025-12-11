@@ -18,23 +18,86 @@
                 }
             }
         }
-        // Simple script for FAQ accordion functionality (Non-functional placeholder logic)
-        function toggleAnswer(elementId) {
-            const answer = document.getElementById(elementId);
-            const icon = document.querySelector(`#${elementId} + button svg`);
-            if (answer.classList.contains('hidden')) {
-                answer.classList.remove('hidden');
-                // Simulate icon change if it were functional
-            } else {
-                answer.classList.add('hidden');
-                // Simulate icon change if it were functional
-            }
-        }
     </script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
         body { font-family: 'Inter', sans-serif; color: #1f2937; background-color: #ffffff; }
+        .skeleton-load { animation: pulse 2s infinite cubic-bezier(0.4, 0, 0.6, 1); background-color: #e5e7eb; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
     </style>
+
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.44.0/dist/umd/supabase.min.js"></script>
+
+    <script>
+        // --- Supabase Configuration ---
+        const SUPABASE_URL = 'https://tqngmkanobjefuogkkeg.supabase.co'; 
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRxbmdta2Fub2JqZWZ1b2dra2VnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU0NjI1NTEsImV4cCI6MjA4MTAzODU1MX0.LP0r4aFKh-pXqUDNMMGcO1bn7KvLDbRmzDdQwMQI11A';
+        const CONTENT_TABLE = 'site_content';
+        const CONTENT_ID = 1;
+
+        let supabaseClient = null;
+
+        function renderPage(data) {
+            const faqContainer = document.getElementById('faq-container');
+            if (faqContainer && data.faq_list && Array.isArray(data.faq_list)) {
+                faqContainer.innerHTML = '';
+                
+                data.faq_list.forEach((item, index) => {
+                    const id = `answer-${index}`;
+                    // The toggleAnswer function remains placeholder but the structure is dynamic
+                    const html = `
+                        <div class="bg-white p-4 rounded-xl shadow-lg border-b border-accent-gold">
+                            <button onclick="document.getElementById('${id}').classList.toggle('hidden')" class="w-full text-right flex justify-between items-center py-2 focus:outline-none">
+                                <span class="text-lg font-bold text-primary-navy">${(index + 1)}. ${item.question || 'سؤال متداول'}</span>
+                                <svg class="w-6 h-6 text-accent-gold transform transition duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                            </button>
+                            <div id="${id}" class="hidden pt-2 border-t mt-2 text-gray-700 leading-relaxed">
+                                ${item.answer || 'پاسخ سؤال.'}
+                            </div>
+                        </div>
+                    `;
+                    faqContainer.innerHTML += html;
+                });
+            }
+            
+            document.querySelectorAll('.skeleton-load').forEach(el => el.classList.remove('skeleton-load'));
+        }
+
+        async function loadContent() {
+            try {
+                if (typeof window.supabase === 'undefined' || window.supabase === null || typeof window.supabase.createClient !== 'function') {
+                    setTimeout(loadContent, 100);
+                    return;
+                }
+                
+                if (!supabaseClient) {
+                   supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                }
+
+                const { data, error } = await supabaseClient
+                    .from(CONTENT_TABLE)
+                    .select('faq_list')
+                    .eq('id', CONTENT_ID)
+                    .single();
+
+                if (error && error.code !== 'PGRST116') {
+                    console.error("Supabase Fetch Error (faq.html):", error.message);
+                }
+
+                if (data) {
+                    renderPage(data);
+                }
+
+            } catch (e) {
+                console.error("General loading error (faq.html):", e.message);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadContent();
+        });
+    </script>
 </head>
 <body class="antialiased">
     <!-- Header (Consistent Navigation) -->
@@ -44,6 +107,7 @@
                 دفتر وکالت <span class="text-accent-gold">فؤادی</span>
             </a>
             <nav class="hidden md:flex space-x-6 space-x-reverse text-white text-sm font-medium">
+                <a href="index.html" class="hover:text-accent-gold transition duration-200">صفحه اصلی</a>
                 <a href="services.html" class="hover:text-accent-gold transition duration-200">خدمات حقوقی</a>
                 <a href="about.html" class="hover:text-accent-gold transition duration-200">درباره وکیل</a>
                 <a href="blog.html" class="hover:text-accent-gold transition duration-200">مقالات و بلاگ</a>
@@ -61,41 +125,10 @@
                 پاسخ‌هایی برای پرسش‌های متداول شما درباره نحوه همکاری، هزینه‌ها و فرآیندهای حقوقی.
             </p>
 
-            <div class="max-w-4xl mx-auto space-y-4">
-                
-                <!-- FAQ Item 1 -->
-                <div class="bg-white p-4 rounded-xl shadow-lg border-b border-accent-gold">
-                    <button onclick="console.log('Toggle Q1')" class="w-full text-right flex justify-between items-center py-2 focus:outline-none">
-                        <span class="text-lg font-bold text-primary-navy">۱. هزینه خدمات وکالت چگونه محاسبه می‌شود؟</span>
-                        <!-- Placeholder for plus/minus icon -->
-                        <svg class="w-6 h-6 text-accent-gold transform transition duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                    </button>
-                    <div id="answer-1" class="hidden pt-2 border-t mt-2 text-gray-700 leading-relaxed">
-                        هزینه‌ها بر اساس تعرفه‌های رسمی کانون وکلا و همچنین پیچیدگی و زمان‌بر بودن پرونده، به‌صورت توافقی تعیین می‌شود. در اولین جلسه مشاوره، پس از بررسی کامل پرونده، برآورد دقیقی از هزینه‌ها به شما ارائه خواهد شد.
-                    </div>
-                </div>
-
-                <!-- FAQ Item 2 -->
-                <div class="bg-white p-4 rounded-xl shadow-lg border-b border-accent-gold">
-                    <button onclick="console.log('Toggle Q2')" class="w-full text-right flex justify-between items-center py-2 focus:outline-none">
-                        <span class="text-lg font-bold text-primary-navy">۲. اولین قدم برای شروع همکاری چیست؟</span>
-                        <svg class="w-6 h-6 text-accent-gold transform transition duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                    </button>
-                    <div id="answer-2" class="hidden pt-2 border-t mt-2 text-gray-700 leading-relaxed">
-                        اولین قدم، تنظیم وقت مشاوره تخصصی است. در این جلسه، شما مدارک و شرح کامل پرونده را ارائه می‌دهید تا وکیل فؤادی بتواند بهترین استراتژی را برای شما مشخص کند. می‌توانید از طریق فرم تماس یا واتساپ اقدام کنید.
-                    </div>
-                </div>
-
-                <!-- FAQ Item 3 -->
-                <div class="bg-white p-4 rounded-xl shadow-lg border-b border-accent-gold">
-                    <button onclick="console.log('Toggle Q3')" class="w-full text-right flex justify-between items-center py-2 focus:outline-none">
-                        <span class="text-lg font-bold text-primary-navy">۳. آیا مشاوره تلفنی یا آنلاین ارائه می‌شود؟</span>
-                        <svg class="w-6 h-6 text-accent-gold transform transition duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                    </button>
-                    <div id="answer-3" class="hidden pt-2 border-t mt-2 text-gray-700 leading-relaxed">
-                        بله، علاوه بر مشاوره حضوری در دفتر، امکان ارائه مشاوره تلفنی و آنلاین از طریق پلتفرم‌های امن نیز فراهم است تا موکلین خارج از تهران نیز بتوانند از خدمات ما استفاده کنند.
-                    </div>
-                </div>
+            <div id="faq-container" class="max-w-4xl mx-auto space-y-4">
+                <!-- Dynamic FAQ Items Rendered Here -->
+                <div class="skeleton-load h-24 w-full rounded-xl"></div>
+                <div class="skeleton-load h-24 w-full rounded-xl"></div>
             </div>
             
             <div class="text-center mt-16 p-8 bg-primary-navy rounded-xl shadow-2xl">

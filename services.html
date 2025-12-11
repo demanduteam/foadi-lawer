@@ -3,13 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تنظیم قراردادهای تجاری و مشاوره حقوقی | محمدجواد فؤادی</title>
-    <meta name="description" content="خدمات تخصصی تنظیم، بررسی و تحلیل قراردادهای داخلی و بین‌المللی و ارائه مشاوره‌های حقوقی دقیق جهت پیشگیری از اختلافات.">
+    <title>خدمات حقوقی محمدجواد فؤادی | دعاوی کیفری، ملکی، خانواده و قراردادها</title>
+    <meta name="description" content="لیست کامل خدمات دفتر وکالت فؤادی شامل مشاوره، وکالت در دعاوی، تنظیم قراردادها و پیگیری پرونده‌های تخصصی.">
     
-    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- FIX: Tailwind config must be after the CDN script -->
     <script>
         tailwind.config = {
             theme: {
@@ -25,7 +22,88 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
         body { font-family: 'Inter', sans-serif; color: #1f2937; background-color: #ffffff; }
+        .skeleton-load { animation: pulse 2s infinite cubic-bezier(0.4, 0, 0.6, 1); background-color: #e5e7eb; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
     </style>
+
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.44.0/dist/umd/supabase.min.js"></script>
+
+    <script>
+        // --- Supabase Configuration ---
+        const SUPABASE_URL = 'https://tqngmkanobjefuogkkeg.supabase.co'; 
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRxbmdta2Fub2JqZWZ1b2dra2VnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU0NjI1NTEsImV4cCI6MjA4MTAzODU1MX0.LP0r4aFKh-pXqUDNMMGcO1bn7KvLDbRmzDdQwMQI11A';
+        const CONTENT_TABLE = 'site_content';
+        const CONTENT_ID = 1;
+
+        let supabaseClient = null;
+
+        function renderPage(data) {
+            // 1. Services Section (Rendering blocks from JSON array)
+            const servicesContainer = document.getElementById('services-blocks-container');
+            if (servicesContainer) {
+                servicesContainer.innerHTML = '';
+                
+                if (data.services && Array.isArray(data.services)) {
+                    // Create dynamic blocks for each service item
+                    data.services.forEach(service => {
+                        const html = `
+                            <div class="bg-white p-8 rounded-xl shadow-lg border-t-4 border-primary-navy hover:shadow-2xl transition duration-300">
+                                <h2 class="text-3xl font-bold text-primary-navy mb-4">${service.title || 'عنوان خدمت'}</h2>
+                                <p class="text-gray-700 text-lg mb-6">${service.description || 'شرحی کامل از این حوزه تخصصی.'}</p>
+                                <!-- Note: The sub-list items should ideally be separate fields, but for simplicity, we use the main description. -->
+                                <ul class="list-disc pr-5 text-gray-600 space-y-1">
+                                    <li> ${service.title} - خدمات </li>
+                                    <li> ${service.title} - مشاوره </li>
+                                    <li> ${service.title} - وکالت </li>
+                                </ul>
+                                <a href="${service.link || '#'}" class="mt-6 inline-block px-6 py-2 bg-accent-gold text-primary-navy font-bold rounded-lg hover:bg-yellow-600 transition">مشاهده جزئیات کامل ${service.title} →</a>
+                            </div>
+                        `;
+                        servicesContainer.innerHTML += html;
+                    });
+                } else {
+                     servicesContainer.innerHTML = '<p class="md:col-span-2 text-center text-red-500">خطا: لیست خدمات از دیتابیس بارگذاری نشد. لطفاً پنل مدیریت را بررسی کنید.</p>';
+                }
+            }
+            
+            document.querySelectorAll('.skeleton-load').forEach(el => el.classList.remove('skeleton-load'));
+        }
+
+        async function loadContent() {
+            try {
+                if (typeof window.supabase === 'undefined' || window.supabase === null || typeof window.supabase.createClient !== 'function') {
+                    setTimeout(loadContent, 100);
+                    return;
+                }
+                
+                if (!supabaseClient) {
+                   supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                }
+
+                const { data, error } = await supabaseClient
+                    .from(CONTENT_TABLE)
+                    .select('services')
+                    .eq('id', CONTENT_ID)
+                    .single();
+
+                if (error && error.code !== 'PGRST116') {
+                    console.error("Supabase Fetch Error (services.html):", error.message);
+                }
+
+                if (data) {
+                    renderPage(data);
+                }
+
+            } catch (e) {
+                console.error("General loading error (services.html):", e.message);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadContent();
+        });
+    </script>
 </head>
 <body class="antialiased">
     <!-- Header (Consistent Navigation) -->
@@ -34,7 +112,6 @@
             <a href="index.html" class="text-xl sm:text-2xl font-bold text-white tracking-wide">
                 دفتر وکالت <span class="text-accent-gold">فؤادی</span>
             </a>
-            <!-- UPDATED: Added "صفحه اصلی" link -->
             <nav class="hidden md:flex space-x-6 space-x-reverse text-white text-sm font-medium">
                 <a href="index.html" class="hover:text-accent-gold transition duration-200">صفحه اصلی</a>
                 <a href="services.html" class="hover:text-accent-gold transition duration-200 border-b-2 border-accent-gold">خدمات حقوقی</a>
@@ -45,51 +122,28 @@
         </div>
     </header>
 
-    <main class="py-16">
+    <main class="py-16 bg-gray-50">
         <div class="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="bg-gray-50 p-8 rounded-xl shadow-2xl">
-                <h1 class="text-4xl font-extrabold text-primary-navy mb-4 border-b-2 border-accent-gold inline-block pb-2">
-                    تنظیم قرارداد و مشاوره حقوقی پیشگیرانه
-                </h1>
-                <p class="text-xl text-gray-700 mt-4 mb-8">
-                    موفقیت‌های بزرگ با پیشگیری آغاز می‌شوند. ما با تنظیم قراردادهای دقیق و ارائه مشاوره مستمر، ریسک حقوقی شما را به حداقل می‌رسانیم.
-                </p>
+            <h1 class="text-4xl font-extrabold text-primary-navy mb-4 text-center">
+                حوزه‌های تخصصی فعالیت و خدمات وکالت
+            </h1>
+            <p class="text-center text-xl text-gray-700 max-w-3xl mx-auto mb-16">
+                تجربه ما در مسیر احقاق حق، پشتوانه آسودگی خاطر شماست. ما در ۴ حوزه کلیدی حقوقی، مشاوره و وکالت تخصصی ارائه می‌دهیم.
+            </p>
 
-                <div class="grid md:grid-cols-3 gap-8">
-                    <!-- Main Content -->
-                    <div class="md:col-span-2 space-y-6">
-                        <section>
-                            <h2 class="text-3xl font-bold text-primary-navy mb-3">حوزه‌های تخصصی قرارداد</h2>
-                            <ul class="list-disc pr-5 text-lg text-gray-700 space-y-2">
-                                <li>**قراردادهای تجاری:** فروش، مشارکت مدنی، پیمانکاری و انواع تعهدات تجاری.</li>
-                                <li>**قراردادهای استخدامی:** تنظیم توافق‌نامه‌های کار، عدم رقابت و محرمانگی (NDA).</li>
-                                <li>**مشاوره مستمر:** ارائه خدمات مشاوره‌ای ساعتی، ماهانه و پروژه‌ای.</li>
-                                <li>**نمایندگی:** نمایندگی حقوقی در جلسات مذاکره و داوری.</li>
-                            </ul>
-                        </section>
-                        
-                        <section>
-                            <h2 class="text-3xl font-bold text-primary-navy mb-3">اهمیت مشاوره حقوقی</h2>
-                            <p class="text-lg text-gray-700">مشاوره قبل از اقدام حقوقی، مهم‌تر از وکالت پس از وقوع اختلاف است. ما با ارائه تحلیل‌های دقیق و پیش‌بینی ریسک‌ها، مسیر قانونی شما را هموار می‌کنیم.</p>
-                        </section>
-                    </div>
+            <div id="services-blocks-container" class="grid md:grid-cols-2 gap-8">
+                <!-- Skeleton Loaders -->
+                <div class="bg-white p-8 rounded-xl shadow-lg border-t-4 border-primary-navy skeleton-load h-64"></div>
+                <div class="bg-white p-8 rounded-xl shadow-lg border-t-4 border-primary-navy skeleton-load h-64"></div>
+                <div class="bg-white p-8 rounded-xl shadow-lg border-t-4 border-primary-navy skeleton-load h-64"></div>
+                <div class="bg-white p-8 rounded-xl shadow-lg border-t-4 border-primary-navy skeleton-load h-64"></div>
+            </div>
 
-                    <!-- Sidebar CTA -->
-                    <aside class="md:col-span-1 bg-white p-6 rounded-xl shadow-lg border-t-4 border-accent-gold h-fit">
-                        <h3 class="text-2xl font-bold text-primary-navy mb-4">درخواست مشاوره قراردادی</h3>
-                        <p class="text-gray-700 mb-4">برای بررسی قراردادهای موجود یا نگارش سند جدید، همین حالا وقت بگیرید.</p>
-                        <a href="contact.html" class="w-full inline-block text-center px-4 py-3 bg-accent-gold text-primary-navy font-bold rounded-lg hover:bg-yellow-600 transition duration-300">
-                            درخواست مشاوره تنظیم قرارداد →
-                        </a>
-                        <p class="mt-4 text-sm text-gray-500 text-center">**پیشگیری بهتر از درمان است.**</p>
-                    </aside>
-                </div>
-
-                <!-- Link to other services -->
-                <div class="mt-12 text-center border-t pt-8 border-gray-200">
-                    <p class="text-xl font-semibold text-primary-navy mb-4">سایر خدمات حقوقی</p>
-                    <a href="services.html" class="text-accent-gold hover:text-yellow-600 transition">بازگشت به لیست کامل خدمات →</a>
-                </div>
+            <div class="text-center mt-16">
+                <p class="text-2xl font-semibold text-primary-navy mb-4">آیا پرونده شما در لیست بالا نیست؟</p>
+                <a href="contact.html" class="inline-block px-8 py-3 bg-primary-navy border border-primary-navy text-white font-bold rounded-lg shadow-xl hover:bg-primary-navy/90 transition duration-300">
+                    با ما تماس بگیرید و مشکل خود را مطرح کنید →
+                </a>
             </div>
         </div>
     </main>

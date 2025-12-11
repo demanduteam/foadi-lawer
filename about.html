@@ -22,7 +22,98 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
         body { font-family: 'Inter', sans-serif; color: #1f2937; background-color: #ffffff; }
+        .skeleton-load { animation: pulse 2s infinite cubic-bezier(0.4, 0, 0.6, 1); background-color: #e5e7eb; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
     </style>
+
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.44.0/dist/umd/supabase.min.js"></script>
+
+    <script>
+        // --- Supabase Configuration ---
+        const SUPABASE_URL = 'https://tqngmkanobjefuogkkeg.supabase.co'; 
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRxbmdta2Fub2JqZWZ1b2dra2VnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU0NjI1NTEsImV4cCI6MjA4MTAzODU1MX0.LP0r4aFKh-pXqUDNMMGcO1bn7KvLDbRmzDdQwMQI11A';
+        const CONTENT_TABLE = 'site_content';
+        const CONTENT_ID = 1;
+
+        let supabaseClient = null;
+
+        function renderPage(data) {
+            // 1. Sidebar Info (Partial)
+            const phone = data.contact_phone || '[شماره تماس]';
+            const instagram = data.social_instagram || 'instagram_link';
+            const linkedin = data.social_linkedin || 'linkedin_link';
+
+            document.getElementById('contact-phone-sidebar').innerText = phone;
+            document.getElementById('social-instagram-link').href = `https://instagram.com/${instagram}`;
+            document.getElementById('social-linkedin-link').href = `https://linkedin.com/${linkedin}`;
+
+            // 2. Main Content
+            const philosophy = document.getElementById('about-full-philosophy');
+            if (philosophy) philosophy.innerText = data.about_full_philosophy || 'فلسفه وکالت از دیتابیس بارگذاری نشد.';
+            
+            // 3. Education Section
+            const eduList = document.getElementById('education-list');
+            if (eduList && data.about_full_education && Array.isArray(data.about_full_education)) {
+                eduList.innerHTML = '';
+                data.about_full_education.forEach(item => {
+                    eduList.innerHTML += `
+                        <li class="border-l-4 border-accent-gold pr-3">
+                            <p class="font-bold text-xl">${item.degree || 'مدرک'}</p>
+                            <p class="text-sm text-gray-500">${item.institution || 'موسسه'}، ${item.year || 'سال'}</p>
+                        </li>
+                    `;
+                });
+            }
+
+            // 4. Achievements Section
+            const achievementsList = document.getElementById('achievements-list');
+            if (achievementsList && data.about_full_achievements && Array.isArray(data.about_full_achievements)) {
+                achievementsList.innerHTML = '';
+                data.about_full_achievements.forEach(item => {
+                    achievementsList.innerHTML += `
+                        <li class="list-disc pr-5 text-lg text-gray-700">${item.text || 'شرح دستاورد'}</li>
+                    `;
+                });
+            }
+
+            document.querySelectorAll('.skeleton-load').forEach(el => el.classList.remove('skeleton-load'));
+        }
+
+        async function loadContent() {
+            try {
+                if (typeof window.supabase === 'undefined' || window.supabase === null || typeof window.supabase.createClient !== 'function') {
+                    setTimeout(loadContent, 100);
+                    return;
+                }
+                
+                if (!supabaseClient) {
+                   supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                }
+
+                const { data, error } = await supabaseClient
+                    .from(CONTENT_TABLE)
+                    .select('*')
+                    .eq('id', CONTENT_ID)
+                    .single();
+
+                if (error && error.code !== 'PGRST116') {
+                    console.error("Supabase Fetch Error (about.html):", error.message);
+                }
+
+                if (data) {
+                    renderPage(data);
+                }
+
+            } catch (e) {
+                console.error("General loading error (about.html):", e.message);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadContent();
+        });
+    </script>
 </head>
 <body class="antialiased">
     <!-- Header (Consistent Navigation) -->
@@ -32,6 +123,7 @@
                 دفتر وکالت <span class="text-accent-gold">فؤادی</span>
             </a>
             <nav class="hidden md:flex space-x-6 space-x-reverse text-white text-sm font-medium">
+                <a href="index.html" class="hover:text-accent-gold transition duration-200">صفحه اصلی</a>
                 <a href="services.html" class="hover:text-accent-gold transition duration-200">خدمات حقوقی</a>
                 <a href="about.html" class="hover:text-accent-gold transition duration-200 border-b-2 border-accent-gold">درباره وکیل</a>
                 <a href="blog.html" class="hover:text-accent-gold transition duration-200">مقالات و بلاگ</a>
@@ -54,9 +146,7 @@
                     <ul class="space-y-3 text-gray-700 text-lg">
                         <li>**پایه وکالت:** پایه یک دادگستری</li>
                         <li>**شماره پروانه:** [شماره پروانه]</li>
-                        <li>**عضو:** کانون وکلای دادگستری [شهر]</li>
-                        <li>**سابقه تخصصی:** [عدد] سال</li>
-                        <li>**تماس سریع:** [شماره تماس]</li>
+                        <li>**تماس سریع:** <span id="contact-phone-sidebar" class="skeleton-load w-2/3 h-5 inline-block">...</span></li>
                     </ul>
                     <a href="contact.html" class="mt-6 w-full inline-block text-center px-4 py-2 bg-accent-gold text-primary-navy font-bold rounded-lg hover:bg-yellow-600 transition">درخواست مشاوره</a>
                 </aside>
@@ -65,30 +155,26 @@
                 <div class="md:col-span-3 space-y-8">
                     <section>
                         <h2 class="text-3xl font-bold text-primary-navy mb-4">فلسفه وکالت و تعهد</h2>
-                        <p class="text-lg text-gray-700 leading-relaxed">محمدجواد فؤادی، فارغ‌التحصیل ممتاز رشته حقوق، فعالیت خود را بر پایه این اصل بنا نهاده که هر موکل شایسته دسترسی به بالاترین سطح از تحلیل حقوقی و استراتژی دفاعی است. تعهد ما نه تنها به قانون، بلکه به منافع عالی موکل و حفظ حقوق مدنی او در پیچیده‌ترین مراحل قضایی است.</p>
-                        <p class="text-lg text-gray-700 leading-relaxed mt-4 font-semibold">تخصص اصلی ما در حوزه‌های دعاوی ملکی، حقوق کیفری و تنظیم قراردادهای تجاری است که تضمین‌کننده پیگیری دقیق و مجدانه پرونده‌های شماست.</p>
+                        <p id="about-full-philosophy" class="text-lg text-gray-700 leading-relaxed skeleton-load h-24 w-full">
+                            فلسفه وکالت، دقت در جزئیات و پیگیری مجدانه تا حصول نتیجه متمرکز شده است. (متن داینامیک)
+                        </p>
                     </section>
 
                     <section>
                         <h2 class="text-3xl font-bold text-primary-navy mb-4 border-b border-gray-200 pb-2">سوابق تحصیلی</h2>
-                        <ul class="space-y-4 text-gray-700">
-                            <li class="border-l-4 border-accent-gold pr-3">
-                                <p class="font-bold text-xl">کارشناسی ارشد حقوق خصوصی</p>
-                                <p class="text-sm text-gray-500">دانشگاه [نام دانشگاه]، [سال فارغ‌التحصیلی]</p>
-                            </li>
-                            <li class="border-l-4 border-accent-gold pr-3">
-                                <p class="font-bold text-xl">کارشناسی حقوق</p>
-                                <p class="text-sm text-gray-500">دانشگاه [نام دانشگاه]، [سال فارغ‌التحصیلی]</p>
-                            </li>
+                        <ul id="education-list" class="space-y-4 text-gray-700">
+                            <!-- Dynamic Content Rendered Here -->
+                            <li class="skeleton-load h-8 w-2/3"></li>
+                            <li class="skeleton-load h-8 w-3/4"></li>
                         </ul>
                     </section>
 
                     <section>
                         <h2 class="text-3xl font-bold text-primary-navy mb-4 border-b border-gray-200 pb-2">افتخارات و تجربیات کلیدی</h2>
-                        <ul class="list-disc pr-5 text-lg text-gray-700 space-y-2">
-                            <li>[تعداد] پرونده موفق در حوزه [تخصص اصلی].</li>
-                            <li>[تعداد] سال مشاوره حقوقی برای شرکت‌های [نام شرکت‌های نمونه].</li>
-                            <li>همکاری با [نهاد یا سازمان حقوقی].</li>
+                        <ul id="achievements-list" class="list-disc pr-5 text-lg text-gray-700 space-y-2">
+                            <!-- Dynamic Content Rendered Here -->
+                            <li class="skeleton-load h-6 w-4/5"></li>
+                            <li class="skeleton-load h-6 w-full"></li>
                         </ul>
                     </section>
                 </div>
@@ -103,8 +189,8 @@
                 &copy; ۱۴۰۴ | کلیه حقوق این وبسایت متعلق به محمدجواد فؤادی است.
             </p>
             <div class="flex space-x-4 space-x-reverse">
-                <a href="#" class="text-gray-400 hover:text-accent-gold transition duration-200" aria-label="لینک به اینستاگرام">اینستاگرام</a>
-                <a href="#" class="text-gray-400 hover:text-accent-gold transition duration-200" aria-label="لینک به لینکدین">لینکدین</a>
+                <a id="social-instagram-link" href="#" class="text-gray-400 hover:text-accent-gold transition duration-200" aria-label="لینک به اینستاگرام">اینستاگرام</a>
+                <a id="social-linkedin-link" href="#" class="text-gray-400 hover:text-accent-gold transition duration-200" aria-label="لینک به لینکدین">لینکدین</a>
                 <a href="faq.html" class="text-gray-400 hover:text-accent-gold transition duration-200" aria-label="لینک به سوالات متداول">سوالات متداول</a>
             </div>
         </div>

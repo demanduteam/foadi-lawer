@@ -22,7 +22,69 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
         body { font-family: 'Inter', sans-serif; color: #1f2937; background-color: #ffffff; }
+        .skeleton-load { animation: pulse 2s infinite cubic-bezier(0.4, 0, 0.6, 1); background-color: #e5e7eb; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
     </style>
+
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.44.0/dist/umd/supabase.min.js"></script>
+
+    <script>
+        // --- Supabase Configuration ---
+        const SUPABASE_URL = 'https://tqngmkanobjefuogkkeg.supabase.co'; 
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRxbmdta2Fub2JqZWZ1b2dra2VnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU0NjI1NTEsImV4cCI6MjA4MTAzODU1MX0.LP0r4aFKh-pXqUDNMMGcO1bn7KvLDbRmzDdQwMQI11A';
+        const CONTENT_TABLE = 'site_content';
+        const CONTENT_ID = 1;
+
+        let supabaseClient = null;
+
+        function renderPage(data) {
+            const phone = data.contact_phone || '[شماره تماس]';
+            const whatsapp = data.contact_whatsapp || '[شماره واتساپ]';
+            const address = data.contact_address || '[آدرس دفتر]';
+
+            document.getElementById('contact-phone-display').innerText = phone;
+            document.getElementById('contact-whatsapp-display').innerText = whatsapp;
+            document.getElementById('contact-whatsapp-link').href = `https://wa.me/${whatsapp.replace('+', '')}`;
+            document.getElementById('contact-address-display').innerText = address;
+            
+            document.querySelectorAll('.skeleton-load').forEach(el => el.classList.remove('skeleton-load'));
+        }
+
+        async function loadContent() {
+            try {
+                if (typeof window.supabase === 'undefined' || window.supabase === null || typeof window.supabase.createClient !== 'function') {
+                    setTimeout(loadContent, 100);
+                    return;
+                }
+                
+                if (!supabaseClient) {
+                   supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                }
+
+                const { data, error } = await supabaseClient
+                    .from(CONTENT_TABLE)
+                    .select('contact_phone, contact_whatsapp, contact_address')
+                    .eq('id', CONTENT_ID)
+                    .single();
+
+                if (error && error.code !== 'PGRST116') {
+                    console.error("Supabase Fetch Error (contact.html):", error.message);
+                }
+
+                if (data) {
+                    renderPage(data);
+                }
+
+            } catch (e) {
+                console.error("General loading error (contact.html):", e.message);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadContent();
+        });
+    </script>
 </head>
 <body class="antialiased">
     <!-- Header (Consistent Navigation) -->
@@ -32,6 +94,7 @@
                 دفتر وکالت <span class="text-accent-gold">فؤادی</span>
             </a>
             <nav class="hidden md:flex space-x-6 space-x-reverse text-white text-sm font-medium">
+                <a href="index.html" class="hover:text-accent-gold transition duration-200">صفحه اصلی</a>
                 <a href="services.html" class="hover:text-accent-gold transition duration-200">خدمات حقوقی</a>
                 <a href="about.html" class="hover:text-accent-gold transition duration-200">درباره وکیل</a>
                 <a href="blog.html" class="hover:text-accent-gold transition duration-200">مقالات و بلاگ</a>
@@ -47,7 +110,7 @@
             </h1>
 
             <div class="grid md:grid-cols-2 gap-12">
-                <!-- Contact Form -->
+                <!-- Contact Form (Static - data submitted here would need a separate API endpoint) -->
                 <div class="bg-white p-8 rounded-xl shadow-2xl border-t-4 border-accent-gold">
                     <h2 class="text-2xl font-bold text-primary-navy mb-4">فرم درخواست مشاوره</h2>
                     <p class="text-gray-700 mb-6">لطفاً اطلاعات خود و شرح مختصر موضوع را وارد کنید. منشی دفتر در اسرع وقت جهت هماهنگی تماس خواهد گرفت.</p>
@@ -91,9 +154,9 @@
                     <div class="bg-white p-6 rounded-xl shadow-lg">
                         <h2 class="text-2xl font-bold text-primary-navy mb-4 border-b border-gray-200 pb-2">اطلاعات تماس و آدرس</h2>
                         <ul class="space-y-4 text-lg text-gray-700">
-                            <li>**تلفن دفتر:** <span class="font-semibold">[شماره تماس]</span></li>
-                            <li>**واتساپ:** <span class="font-semibold">[شماره واتساپ]</span> 
-                                <a href="https://wa.me/[شماره واتساپ]" target="_blank" class="text-accent-gold text-sm pr-2">(ارتباط سریع)</a>
+                            <li>**تلفن دفتر:** <span id="contact-phone-display" class="font-semibold skeleton-load w-32 h-6 inline-block">...</span></li>
+                            <li>**واتساپ:** <span id="contact-whatsapp-display" class="font-semibold skeleton-load w-48 h-6 inline-block">...</span> 
+                                <a id="contact-whatsapp-link" href="#" target="_blank" class="text-accent-gold text-sm pr-2">(ارتباط سریع)</a>
                             </li>
                             <li>**ایمیل:** <span class="font-semibold">[ایمیل رسمی]</span></li>
                             <li>**ساعت کاری:** شنبه تا چهارشنبه، ۹ صبح تا ۵ عصر</li>
@@ -102,7 +165,7 @@
                     
                     <div class="bg-white p-6 rounded-xl shadow-lg">
                         <h2 class="text-2xl font-bold text-primary-navy mb-4 border-b border-gray-200 pb-2">نشانی دفتر</h2>
-                        <p class="text-lg text-gray-700 mb-4">آدرس کامل دفتر وکالت در تهران: [آدرس دقیق دفتر]</p>
+                        <p id="contact-address-display" class="text-lg text-gray-700 mb-4 skeleton-load h-16 w-full">آدرس کامل دفتر وکالت در تهران: [آدرس دقیق دفتر]</p>
                         <!-- Map Placeholder -->
                         <div class="w-full h-64 bg-gray-300 rounded-lg flex items-center justify-center text-gray-600 shadow-inner">
                             محل قرارگیری لوکیشن (Google Map Embed)
