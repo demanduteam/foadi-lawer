@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>محمدجواد فؤادی | وکیل پایه یک دادگستری، دعاوی ملکی، کیفری و خانواده</title>
     <meta name="description" content="محمدجواد فؤادی، وکیل پایه یک دادگستری و مشاور حقوقی. مشاوره تخصصی و پیگیری مجدانه پرونده‌های ملکی، خانواده و قراردادها.">
+    <meta name="keywords" content="محمدجواد فؤادی, وکیل محمدجواد فؤادی, وکیل پایه یک، حقوقی، کیفری، دعاوی ملکی، مشاوره حقوقی، وکیل تهران">
+    <meta name="author" content="محمدجواد فؤادی">
     
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -26,7 +28,6 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
         body { font-family: 'Inter', sans-serif; color: #1f2937; background-color: #ffffff; }
-        /* Skeleton loaders for smooth transition */
         .skeleton-load { animation: pulse 2s infinite cubic-bezier(0.4, 0, 0.6, 1); background-color: #e5e7eb; }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
     </style>
@@ -39,6 +40,7 @@
         const SUPABASE_URL = 'https://tqngmkanobjefuogkkeg.supabase.co'; 
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRxbmdta2Fub2JqZWZ1b2dra2VnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU0NjI1NTEsImV4cCI6MjA4MTAzODU1MX0.LP0r4aFKh-pXqUDNMMGcO1bn7KvLDbRmzDdQwMQI11A';
         const CONTENT_TABLE = 'site_content';
+        const ARTICLE_TABLE = 'articles'; // Added article table reference
         const CONTENT_ID = 1;
 
         let supabaseClient = null;
@@ -50,7 +52,7 @@
         function renderPage(data) {
             // 1. Hero Section
             const heroTitle = document.getElementById('hero-title-h1');
-            if (heroTitle) heroTitle.innerText = data.hero_title || 'عدالت، تضمین شده با دانش و تجربه';
+            if (heroTitle) heroTitle.innerText = data.hero_title || 'خدمات حقوقی';
             
             const heroSubtitle = document.getElementById('hero-subtitle-p');
             if (heroSubtitle) heroSubtitle.innerHTML = `**محمدجواد فؤادی**، ${data.hero_subtitle || 'وکیل پایه یک دادگستری و متخصص دعاوی حقوقی.'}`;
@@ -59,7 +61,7 @@
             const aboutText = document.getElementById('about-section-text');
             if (aboutText) aboutText.innerText = data.about_section_text || 'متن خلاصه درباره وکیل از دیتابیس بارگذاری نشد.';
             
-            // 3. Services Section (Rendering cards from JSON array)
+            // 3. Services Section
             const servicesContainer = document.getElementById('services-container');
             if (servicesContainer) {
                 servicesContainer.innerHTML = ''; // Clear skeleton loaders
@@ -76,15 +78,15 @@
                         servicesContainer.innerHTML += html;
                     });
                 } else {
-                     servicesContainer.innerHTML = '<p class="md:col-span-4 text-center text-red-500">خطا: لیست خدمات از دیتابیس بارگذاری نشد. لطفاً پنل مدیریت را بررسی کنید.</p>';
+                     servicesContainer.innerHTML = '<p class="md:col-span-4 text-center text-red-500">خطا: لیست خدمات از دیتابیس بارگذاری نشد.</p>';
                 }
             }
 
-            // 4. Footer/Contact Info (Loaded from DB)
+
+            // 4. Footer/Contact Info
             const phone = data.contact_phone || '[شماره تماس]';
-            const whatsapp = data.contact_whatsapp || '[شماره واتساپ]';
-            const instagram = data.social_instagram || 'instagram_link';
-            const linkedin = data.social_linkedin || 'linkedin_link';
+            const instagram = data.social_instagram || '#';
+            const linkedin = data.social_linkedin || '#';
 
             const phoneFooter = document.getElementById('contact-phone-footer');
             if (phoneFooter) phoneFooter.innerText = phone;
@@ -94,29 +96,83 @@
             
             const linkedinLink = document.getElementById('social-linkedin-link');
             if (linkedinLink) linkedinLink.href = `https://linkedin.com/in/${linkedin}`;
+            
+            // Call article loader after main content is loaded
+            loadArticlePreviews();
 
             // Remove all skeleton classes after loading
             document.querySelectorAll('.skeleton-load').forEach(el => el.classList.remove('skeleton-load'));
         }
+
+        async function loadArticlePreviews() {
+            const container = document.getElementById('articles-preview-container');
+            if (!container) return;
+            
+            try {
+                 if (!supabaseClient) {
+                   if (typeof window.supabase === 'undefined' || typeof window.supabase.createClient !== 'function') {
+                        throw new Error("Supabase SDK is not loaded.");
+                    }
+                   supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                }
+
+                const { data: articles, error } = await supabaseClient
+                    .from(ARTICLE_TABLE)
+                    .select('title, content, slug, publish_date')
+                    .eq('is_published', true)
+                    .order('publish_date', { ascending: false })
+                    .limit(3);
+
+                if (error) throw error;
+                
+                container.innerHTML = ''; // Clear skeleton loaders
+
+                if (articles && articles.length > 0) {
+                    articles.forEach(article => {
+                        const date = new Date(article.publish_date).toLocaleDateString('fa-IR');
+                        // Use a safe substring for preview
+                        const previewContent = article.content ? article.content.substring(0, 100).replace(/<[^>]*>?/gm, '') + '...' : '...';
+                        const articleLink = `article.html?slug=${article.slug}`;
+
+                        const html = `
+                            <article class="bg-gray-50 p-5 rounded-lg shadow-md border border-gray-200">
+                                <h3 class="text-lg font-bold text-primary-navy hover:text-accent-gold transition duration-200 mb-2">
+                                    <a href="${articleLink}">${article.title}</a>
+                                </h3>
+                                <p class="text-sm text-gray-500 mb-4">تاریخ: ${date}</p>
+                                <p class="text-gray-700 text-base line-clamp-3">${previewContent}</p>
+                                <a href="${articleLink}" class="mt-3 text-accent-gold font-medium inline-block text-sm hover:text-yellow-600">مطالعه کامل →</a>
+                            </article>
+                        `;
+                        container.innerHTML += html;
+                    });
+                } else {
+                    container.innerHTML = '<p class="md:col-span-3 text-center text-gray-500 p-4">هنوز مقاله‌ای منتشر نشده است.</p>';
+                }
+
+
+            } catch (e) {
+                console.error("Error loading article previews:", e.message);
+                container.innerHTML = '<p class="md:col-span-3 text-center text-red-500 p-4">خطا در بارگذاری پیش‌نمایش مقالات.</p>';
+            }
+        }
+
 
         /**
          * Fetches dynamic content from the Supabase site_content table.
          */
         async function loadContent() {
             try {
-                if (typeof window.supabase === 'undefined' || window.supabase === null || typeof window.supabase.createClient !== 'function') {
-                    // Supabase SDK not loaded yet, or failed to load.
-                    setTimeout(loadContent, 100);
-                    return;
-                }
-                
                 if (!supabaseClient) {
+                   if (typeof window.supabase === 'undefined' || typeof window.supabase.createClient !== 'function') {
+                        throw new Error("Supabase SDK is not loaded.");
+                    }
                    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
                 }
 
                 const { data, error } = await supabaseClient
                     .from(CONTENT_TABLE)
-                    .select('*')
+                    .select('hero_title, hero_subtitle, about_section_text, services, contact_phone, social_instagram, social_linkedin')
                     .eq('id', CONTENT_ID)
                     .single();
 
@@ -197,8 +253,9 @@
                     وکیل محمدجواد فؤادی: پشتوانه‌ای حقوقی برای آینده شما
                 </h2>
                 <div class="grid md:grid-cols-3 gap-10 items-center">
-                    <!-- Static Content (Image Placeholder) -->
+                    <!-- Dynamic Image Placeholder -->
                     <div class="md:col-span-1 flex justify-center">
+                        <!-- Image URL will be static for now, dynamic image handling is complex -->
                         <img src="https://placehold.co/300x400/132e54/ffffff?text=Professional+Photo" alt="تصویر محمدجواد فؤادی، وکیل پایه یک دادگستری" class="w-full max-w-xs md:max-w-sm rounded-xl shadow-2xl border-4 border-accent-gold/50">
                     </div>
                     
@@ -237,41 +294,24 @@
             </div>
         </section>
         
-        <!-- 4. Articles/Blog Preview Section (Static for now) -->
+        <!-- 4. Articles/Blog Preview Section (DYNAMIC) -->
         <section id="articles" class="py-20 bg-white">
             <div class="container mx-auto px-4 sm:px-6 lg:px-8">
                 <h2 class="text-3xl sm:text-4xl font-bold text-primary-navy mb-16 text-center">
                     آخرین مقالات و تحلیل‌های حقوقی
                 </h2>
                 
-                <div class="grid md:grid-cols-3 gap-8">
-                    <!-- Static Article 1 -->
-                    <article class="bg-gray-50 p-5 rounded-lg shadow-md border border-gray-200">
-                        <h3 class="text-lg font-bold text-primary-navy hover:text-accent-gold transition duration-200 mb-2">
-                            <a href="blog.html">چگونه تفاوت سند عادی و رسمی را در دعاوی ملکی تشخیص دهیم؟</a>
-                        </h3>
-                        <p class="text-sm text-gray-500 mb-4">تاریخ: ۱۴۰۴/۰۹/۲۰</p>
-                        <p class="text-gray-700 text-base line-clamp-3">سند رسمی، سندی است که در اداره ثبت اسناد یا دفاتر اسناد رسمی تنظیم شده باشد. در مقابل، اسناد عادی فاقد این شرایط قانونی هستند و...</p>
-                        <a href="blog.html" class="mt-3 text-accent-gold font-medium inline-block text-sm hover:text-yellow-600">مطالعه کامل →</a>
-                    </article>
-                    <!-- Static Article 2 -->
-                    <article class="bg-gray-50 p-5 rounded-lg shadow-md border border-gray-200">
-                        <h3 class="text-lg font-bold text-primary-navy hover:text-accent-gold transition duration-200 mb-2">
-                            <a href="blog.html">نکات کلیدی برای تنظیم وکالت‌نامه جامع و مانع</a>
-                        </h3>
-                        <p class="text-sm text-gray-500 mb-4">تاریخ: ۱۴۰۴/۰۹/۱۵</p>
-                        <p class="text-gray-700 text-base line-clamp-3">وکالت‌نامه یکی از حساس‌ترین اسناد حقوقی است. عدم درج حدود اختیارات می‌تواند تبعات جبران‌ناپذیری به همراه داشته باشد...</p>
-                        <a href="blog.html" class="mt-3 text-accent-gold font-medium inline-block text-sm hover:text-yellow-600">مطالعه کامل →</a>
-                    </article>
-                    <!-- Static Article 3 -->
-                    <article class="bg-gray-50 p-5 rounded-lg shadow-md border border-gray-200">
-                        <h3 class="text-lg font-bold text-primary-navy hover:text-accent-gold transition duration-200 mb-2">
-                            <a href="blog.html">جرایم سایبری: ضرورت مشاوره تخصصی در پرونده‌های آنلاین</a>
-                        </h3>
-                        <p class="text-sm text-gray-500 mb-4">تاریخ: ۱۴۰۴/۰۹/۱۰</p>
-                        <p class="text-gray-700 text-base line-clamp-3">با گسترش فضای مجازی، جرایم مرتبط با آن نیز افزایش یافته است. برای دفاع مؤثر، آشنایی کامل با قوانین جرایم رایانه‌ای ضروری است...</p>
-                        <a href="blog.html" class="mt-3 text-accent-gold font-medium inline-block text-sm hover:text-yellow-600">مطالعه کامل →</a>
-                    </article>
+                <!-- DYNAMIC CONTENT 5: Articles Preview Container -->
+                <div id="articles-preview-container" class="grid md:grid-cols-3 gap-8">
+                    <!-- Skeleton Loaders for Articles -->
+                    <article class="bg-gray-50 p-5 rounded-lg shadow-md border border-gray-200 skeleton-load h-48"></article>
+                    <article class="bg-gray-50 p-5 rounded-lg shadow-md border border-gray-200 skeleton-load h-48"></article>
+                    <article class="bg-gray-50 p-5 rounded-lg shadow-md border border-gray-200 skeleton-load h-48"></article>
+                </div>
+                <div class="text-center mt-12">
+                    <a href="blog.html" class="inline-block px-8 py-3 bg-primary-navy border border-primary-navy text-white font-bold rounded-lg shadow-xl hover:bg-primary-navy/90 transition duration-300">
+                        مشاهده تمامی مقالات و بلاگ →
+                    </a>
                 </div>
             </div>
         </section>
@@ -300,8 +340,8 @@
                 &copy; ۱۴۰۴ | کلیه حقوق این وبسایت متعلق به محمدجواد فؤادی است.
             </p>
             <div class="flex space-x-4 space-x-reverse">
-                <a id="social-instagram-link" href="#" class="text-gray-400 hover:text-accent-gold transition duration-200" aria-label="لینک به اینستاگرام">اینستاگرام</a>
-                <a id="social-linkedin-link" href="#" class="text-gray-400 hover:text-accent-gold transition duration-200" aria-label="لینک به لینکدین">لینکدین</a>
+                <a id="social-instagram-link" href="#" target="_blank" class="text-gray-400 hover:text-accent-gold transition duration-200" aria-label="لینک به اینستاگرام">اینستاگرام</a>
+                <a id="social-linkedin-link" href="#" target="_blank" class="text-gray-400 hover:text-accent-gold transition duration-200" aria-label="لینک به لینکدین">لینکدین</a>
                 <a href="faq.html" class="text-gray-400 hover:text-accent-gold transition duration-200" aria-label="لینک به سوالات متداول">سوالات متداول</a>
             </div>
         </div>
